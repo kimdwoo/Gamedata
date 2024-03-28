@@ -11,12 +11,18 @@ namespace SwordEnhancement
         {
             if (money < enhancementCost)
             {
-                Console.WriteLine("\n강화 비용이 부족합니다. 돈을 충전하실래요? 50,000원 충전하려면 1000을 입력하세요. (종료: n)");
+                Console.WriteLine("\n강화 비용이 부족합니다. 돈을 충전하실래요? 100,000원 충전하려면 1000을 입력하세요. (종료: n)");
+                Console.WriteLine("\n강화 비용이 부족합니다. 돈을 충전하실래요? 1,000,000원 충전하려면 10000을 입력하세요. (종료: n)");
                 string rechargeInput = Console.ReadLine();
                 if (rechargeInput == "1000")
                 {
                     money += 100000;
                     Console.WriteLine("100,000원이 충전되었습니다. 게임을 계속합니다.");
+                }
+                else if (rechargeInput == "10000") // 변경된 부분: 10000 입력 시 1000000 충전
+                {
+                    money += 1000000;
+                    Console.WriteLine("1,000,000원이 충전되었습니다. 게임을 계속합니다.");
                 }
                 else if (rechargeInput.ToLower() == "n")
                 {
@@ -30,6 +36,7 @@ namespace SwordEnhancement
                 }
             }
         }
+
         static void Main(string[] args)
         {
             Console.WriteLine("사용자 아이디를 입력하세요:");
@@ -45,11 +52,17 @@ namespace SwordEnhancement
                 if (money < enhancementCost)
                 {
                     Console.WriteLine("\n강화 비용이 부족합니다. 돈을 충전하실래요? 100,000원 충전하려면 1000을 입력하세요. (종료: n)");
+                    Console.WriteLine("\n강화 비용이 부족합니다. 돈을 충전하실래요? 1,000,000원 충전하려면 10000을 입력하세요. (종료: n)");
                     string rechargeInput = Console.ReadLine();
                     if (rechargeInput == "1000")
                     {
                         money += 100000;
                         Console.WriteLine("100,000원이 충전되었습니다.감사합니다.");
+                    }
+                    else if (rechargeInput == "10000") // 변경된 부분: 10000 입력 시 1000000 충전
+                    {
+                        money += 1000000;
+                        Console.WriteLine("1,000,000원이 충전되었습니다. 게임을 계속합니다.");
                     }
                     else if (rechargeInput.ToLower() == "n")
                     {
@@ -75,7 +88,7 @@ namespace SwordEnhancement
 
             bool playing = true;
 
-            Console.WriteLine("검 강화 시뮬레이터에 오신 것을 환영합니다.");
+            Console.WriteLine("강화 시뮬레이터에 오신 것을 환영합니다.");
 
             CheckAndRecharge(ref money, enhancementCost);
 
@@ -173,11 +186,17 @@ namespace SwordEnhancement
                 if (money < enhancementCost)
                 {
                     Console.WriteLine("\n벌써 돈을 다썻어요.. 돈을 충전하실래요? 100,000원 충전하려면 1000을 입력하세요. (종료: n)");
+                    Console.WriteLine("\n벌써 돈을 다썻어요.. 돈을 충전하실래요? 1,000,000원 충전하려면 10000을 입력하세요. (종료: n)");
                     string rechargeInput = Console.ReadLine();
                     if (rechargeInput == "1000")
                     {
                         money += 100000;
                         Console.WriteLine("100,000원이 충전되었어요 다시 강화해봐요!");
+                    }
+                    else if (rechargeInput == "10000") // 변경된 부분: 10000 입력 시 1000000 충전
+                    {
+                        money += 1000000;
+                        Console.WriteLine("1,000,000원이 충전되었습니다. 게임을 계속합니다.");
                     }
                     else if (rechargeInput.ToLower() == "n")
                     {

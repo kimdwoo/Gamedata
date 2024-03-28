@@ -7,7 +7,29 @@ namespace SwordEnhancement
     class Program
     {
         static string filePath = "userData.txt"; // 사용자 데이터를 저장할 파일
-
+        static void CheckAndRecharge(ref int money, int enhancementCost)
+        {
+            if (money < enhancementCost)
+            {
+                Console.WriteLine("\n강화 비용이 부족합니다. 돈을 충전하실래요? 50,000원 충전하려면 1000을 입력하세요. (종료: n)");
+                string rechargeInput = Console.ReadLine();
+                if (rechargeInput == "1000")
+                {
+                    money += 100000;
+                    Console.WriteLine("100,000원이 충전되었습니다. 게임을 계속합니다.");
+                }
+                else if (rechargeInput.ToLower() == "n")
+                {
+                    Console.WriteLine("게임을 종료합니다.");
+                    Environment.Exit(0); // 프로그램 종료
+                }
+                else
+                {
+                    Console.WriteLine("잘못된 입력입니다. 게임을 종료합니다.");
+                    Environment.Exit(0); // 프로그램 종료
+                }
+            }
+        }
         static void Main(string[] args)
         {
             Console.WriteLine("사용자 아이디를 입력하세요:");
@@ -19,6 +41,27 @@ namespace SwordEnhancement
             if (TryLoadUserData(userId, out enhancementLevel, out successRate, out money, out destructionRate, out enhancementCost))
             {
                 Console.WriteLine($"{userId}님, 이전 게임 상태를 불러왔습니다.");
+                // 데이터 로딩 후 돈이 강화 비용보다 적은지 검사
+                if (money < enhancementCost)
+                {
+                    Console.WriteLine("\n강화 비용이 부족합니다. 돈을 충전하실래요? 100,000원 충전하려면 1000을 입력하세요. (종료: n)");
+                    string rechargeInput = Console.ReadLine();
+                    if (rechargeInput == "1000")
+                    {
+                        money += 100000;
+                        Console.WriteLine("100,000원이 충전되었습니다.감사합니다.");
+                    }
+                    else if (rechargeInput.ToLower() == "n")
+                    {
+                        Console.WriteLine("게임을 종료합니다.");
+                        return; // 프로그램 종료
+                    }
+                    else
+                    {
+                        Console.WriteLine("잘못된 입력입니다. 게임을 종료합니다.");
+                        return; // 프로그램 종료
+                    }
+                }
             }
             else
             {
@@ -34,35 +77,37 @@ namespace SwordEnhancement
 
             Console.WriteLine("검 강화 시뮬레이터에 오신 것을 환영합니다.");
 
+            CheckAndRecharge(ref money, enhancementCost);
+
             while (playing && enhancementLevel < 20 && money >= enhancementCost)
             {
                 double sellPrice = enhancementLevel >= 5 ? enhancementCost * 3 : 0;
-                
+
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine($"\n현재 강화 단계: {enhancementLevel}, ");
 
-                
+
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write($"현재 성공률: {successRate}% ");
 
-                
+
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.Write($"파괴 확률: {destructionRate}%, ");
 
-                
+
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write($"현재 강화 비용: {enhancementCost}원, ");
 
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write($"판매 가격: {sellPrice}원, ");
-               
+
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine($"남은 돈: {money}원");
 
                 // 텍스트 색상을 다시 기본값(보통 흰색 또는 회색)으로 설정
                 Console.ResetColor();
 
-                Console.WriteLine("강화를 시도하시겠습니까? (예: y, 판매: s, 종료: n)");
+                Console.WriteLine("강화를 시도하시겠습니까? (예: y, 판매: s, 저장후 종료: n)");
                 string userInput = Console.ReadLine();
 
                 if (userInput.ToLower() == "y")
@@ -104,7 +149,7 @@ namespace SwordEnhancement
                     if (enhancementLevel >= 5)
                     {
                         money += (int)sellPrice;
-                        Console.WriteLine($"검을 판매했습니다. {sellPrice}원을 얻었습니다.");
+                        Console.WriteLine($"검을 판매했습니다. {sellPrice}원이나 벌었어요!!!");
                         // 판매 후 초기화
                         enhancementLevel = 0;
                         successRate = 95.0;
@@ -113,7 +158,7 @@ namespace SwordEnhancement
                     }
                     else
                     {
-                        Console.WriteLine("5단계 이상의 검만 판매할 수 있습니다.");
+                        Console.WriteLine("5단계 이상의 검만 팔수있어요!");
                     }
                 }
                 else if (userInput.ToLower() == "n")
@@ -123,16 +168,16 @@ namespace SwordEnhancement
                 }
                 else
                 {
-                    Console.WriteLine("잘못된 입력입니다. 다시 입력해주세요.");
+                    Console.WriteLine("이건 강화를위한 입력이 아니네요..");
                 }
                 if (money < enhancementCost)
                 {
-                    Console.WriteLine("\n돈이 부족합니다. 돈을 충전하시겠습니까? 50,000원 충전하려면 1000을 입력하세요. (종료: n)");
+                    Console.WriteLine("\n벌써 돈을 다썻어요.. 돈을 충전하실래요? 100,000원 충전하려면 1000을 입력하세요. (종료: n)");
                     string rechargeInput = Console.ReadLine();
                     if (rechargeInput == "1000")
                     {
-                        money += 50000;
-                        Console.WriteLine("50,000원이 충전되었습니다.");
+                        money += 100000;
+                        Console.WriteLine("100,000원이 충전되었어요 다시 강화해봐요!");
                     }
                     else if (rechargeInput.ToLower() == "n")
                     {
@@ -142,12 +187,23 @@ namespace SwordEnhancement
                     }
                     else
                     {
-                        Console.WriteLine("잘못된 입력입니다. 게임을 종료합니다.");
+                        Console.WriteLine("잘못된 입력이에요. 게임을 끌게요.");
                         playing = false;
                         break;
                     }
                 }
+                if (money < enhancementCost)
+                {
+                    CheckAndRecharge(ref money, enhancementCost);
+                    // 충전 후에도 돈이 부족하면 게임 루프 종료
+                    if (money < enhancementCost)
+                    {
+                        Console.WriteLine("돈이 여전히 부족합니다. 게임을 종료합니다.");
+                        break;
+                    }
+                }
             }
+        
             if (!playing)
             {
                 SaveUserData(userId, enhancementLevel, successRate, money, destructionRate, enhancementCost);

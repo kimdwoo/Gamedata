@@ -27,3 +27,17 @@ C:\student\gamedata\KDW\game\obj\Debug\net8.0\refint\game.dll
 C:\student\gamedata\KDW\game\obj\Debug\net8.0\game.pdb
 C:\student\gamedata\KDW\game\obj\Debug\net8.0\game.genruntimeconfig.cache
 C:\student\gamedata\KDW\game\obj\Debug\net8.0\ref\game.dll
+C:\student\KDW\game\bin\Debug\net8.0\game.exe
+C:\student\KDW\game\bin\Debug\net8.0\game.deps.json
+C:\student\KDW\game\bin\Debug\net8.0\game.runtimeconfig.json
+C:\student\KDW\game\bin\Debug\net8.0\game.dll
+C:\student\KDW\game\bin\Debug\net8.0\game.pdb
+C:\student\KDW\game\obj\Debug\net8.0\game.GeneratedMSBuildEditorConfig.editorconfig
+C:\student\KDW\game\obj\Debug\net8.0\game.AssemblyInfoInputs.cache
+C:\student\KDW\game\obj\Debug\net8.0\game.AssemblyInfo.cs
+C:\student\KDW\game\obj\Debug\net8.0\game.csproj.CoreCompileInputs.cache
+C:\student\KDW\game\obj\Debug\net8.0\game.dll
+C:\student\KDW\game\obj\Debug\net8.0\refint\game.dll
+C:\student\KDW\game\obj\Debug\net8.0\game.pdb
+C:\student\KDW\game\obj\Debug\net8.0\game.genruntimeconfig.cache
+C:\student\KDW\game\obj\Debug\net8.0\ref\game.dll

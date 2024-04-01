@@ -8,37 +8,6 @@ namespace SwordEnhancement
     {
         static string filePath = "userData.txt"; // 사용자 데이터를 저장할 파일
 
-
-        static void CheckAndRecharge(ref int money, int enhancementCost)
-        {
-            if (money < enhancementCost) //다시 사용자 데이터를 불러왔을때 강화비용이 없을경우 출력
-            {
-                Console.WriteLine("\n강화 비용이 부족합니다. 돈을 충전하실래요? 100,000원 충전하려면 1000을 입력하세요. (종료: n)");
-                Console.WriteLine("\n강화 비용이 부족합니다. 돈을 충전하실래요? 1,000,000원 충전하려면 10000을 입력하세요. (종료: n)");
-                string rechargeInput = Console.ReadLine();
-                if (rechargeInput == "1000")
-                {
-                    money += 100000;
-                    Console.WriteLine("100,000원이 충전되었습니다. 게임을 계속합니다.");
-                }
-                else if (rechargeInput == "10000") //10000 입력 시 1000000원 충전
-                {
-                    money += 1000000;
-                    Console.WriteLine("1,000,000원이 충전되었습니다. 게임을 계속합니다.");
-                }
-                else if (rechargeInput.ToLower() == "n")
-                {
-                    Console.WriteLine("게임을 종료합니다.");
-                    Environment.Exit(0); // n 입력시 프로그램 종료
-                }
-                else
-                {
-                    Console.WriteLine("잘못된 입력입니다. 게임을 종료합니다.");
-                    Environment.Exit(0); // 다른 채팅 입력시 프로그램 종료
-                }
-            }
-        }
-
         static void Main(string[] args)
         {
             Console.WriteLine("사용자 아이디를 입력하세요:");
@@ -49,62 +18,22 @@ namespace SwordEnhancement
             // 사용자 데이터 불러오기
             if (TryLoadUserData(userId, out enhancementLevel, out successRate, out money, out destructionRate, out enhancementCost))
             {
-                // 데이터 로딩 후 돈이 강화 비용보다 적은지 검사
                 Console.WriteLine($"{userId}님, 이전 게임 상태를 불러왔습니다.");
-                Console.WriteLine("\n강화 비용이 부족합니다. 검을 판매하실래요? (판매:s)");
-                Console.WriteLine("\n강화 비용이 부족합니다. 돈을 충전하실래요? 100,000원 충전하려면 1000을 입력하세요. (종료: n)");
-                Console.WriteLine("\n강화 비용이 부족합니다. 돈을 충전하실래요? 1,000,000원 충전하려면 10000을 입력하세요. (종료: n)");
+                // 데이터 로딩 후 돈이 강화 비용보다 적은지 검사
                 if (money < enhancementCost)
                 {
-                    double sellPrice = enhancementLevel >= 5 ? enhancementCost * 3 : 0;  
-                    string userInput = Console.ReadLine();
-                    if (enhancementLevel >= 5)
-                    {
-                        money += (int)sellPrice;
-                        Console.WriteLine($"검을 판매했습니다. {sellPrice}원이나 벌었어요!!!");
-                        // 판매 후 초기화
-                        enhancementLevel = 0;
-                        successRate = 95.0;
-                        destructionRate = 0.0;
-                        enhancementCost = 100;
-                        
-                        if (userInput == "1000")
-                        {
-                            money += 100000;
-                            Console.WriteLine("100,000원이 충전되었습니다.감사합니다.");
-                        }
-                        else if (userInput == "10000") // 변경된 부분: 10000 입력 시 1000000 충전
-                        {
-                            money += 1000000;
-                            Console.WriteLine("1,000,000원이 충전되었습니다. 게임을 계속합니다.");
-                        }
-                        else
-                        {
-                            Console.WriteLine("5단계 이상의 검만 팔수있어요!");
-                        }
-                    }
-
-
-                    else if (userInput.ToLower() == "n")
-                    {
-                        Console.WriteLine("게임을 종료합니다.");
-                        return; // n 입력시 프로그램 종료
-                    }
-                    else
-                    {
-                        Console.WriteLine("잘못된 입력입니다. 게임을 종료합니다.");
-                        return; // 프로그램 종료
-                    }
+                    Console.WriteLine("\n강화 비용이 부족합니다. 돈을 충전하시거나 검을 판매하실 수 있습니다.");
+                    AskForAction(ref money, enhancementCost, userId, enhancementLevel, successRate, destructionRate, enhancementCost);
                 }
-                else
-                {
-                    enhancementLevel = 0;  //아이디가 없을경우 새로운 게임 시작
-                    successRate = 95.0; //수치조정
-                    destructionRate = 0.0;
-                    enhancementCost = 100;
-                    money = 1000000;
-                    Console.WriteLine("새 게임을 시작합니다.");
-                }
+            }
+            else
+            {
+                enhancementLevel = 0;  //아이디가 없을경우 새로운 게임 시작
+                successRate = 95.0; //수치조정
+                destructionRate = 0.0;
+                enhancementCost = 100;
+                money = 1000000;
+                Console.WriteLine("새 게임을 시작합니다.");
             }
 
             bool playing = true;
@@ -120,14 +49,11 @@ namespace SwordEnhancement
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine($"\n현재 강화 단계: {enhancementLevel}, ");
 
-
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write($"현재 성공률: {successRate}% ");
 
-
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.Write($"파괴 확률: {destructionRate}%, ");
-
 
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write($"현재 강화 비용: {enhancementCost}원, ");
@@ -165,7 +91,7 @@ namespace SwordEnhancement
                     else if (chance <= successRate + destructionRate && enhancementLevel >= 5)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("!!! 저런... 손이 미끄러졋네요!!!");
+                        Console.WriteLine("!!! 저런... 손이 미끄러졌네요!!!");
                         //파괴후 초기화 수치조정
                         enhancementLevel = 0;
                         successRate = 95.0;
@@ -181,25 +107,22 @@ namespace SwordEnhancement
                 }
                 else if (userInput.ToLower() == "s")
                 {
-                    if (enhancementLevel >= 5) //판매는 5단계 이상부터 수치조정
-                    {
-                        money += (int)sellPrice;
-                        Console.WriteLine($"검을 판매했습니다. {sellPrice}원이나 벌었어요!!!");
-                        // 판매 후 초기화 수치조정
-                        enhancementLevel = 0;
-                        successRate = 95.0;
-                        destructionRate = 0.0;
-                        enhancementCost = 100;
-                    }
-                    else 
-                    {
-                        Console.WriteLine("5단계 이상의 검만 팔수있어요!");
-                    }
+                    SellSword(ref money, enhancementLevel, successRate, destructionRate, enhancementCost);
                 }
                 else if (userInput.ToLower() == "n")
                 {
                     Console.WriteLine("게임을 종료합니다.");
                     playing = false;
+                }
+                else if (userInput == "1000")
+                {
+                    money += 100000;
+                    Console.WriteLine("100,000원이 충전되었습니다. 게임을 계속합니다.");
+                }
+                else if (userInput == "10000") // 10000 입력 시 1000000원 충전
+                {
+                    money += 1000000;
+                    Console.WriteLine("1,000,000원이 충전되었습니다. 게임을 계속합니다.");
                 }
                 else
                 {
@@ -207,31 +130,8 @@ namespace SwordEnhancement
                 }
                 if (money < enhancementCost)
                 {
-                    Console.WriteLine("\n벌써 돈을 다썻어요.. 돈을 충전하실래요? 100,000원 충전하려면 1000을 입력하세요. (종료: n)");
-                    Console.WriteLine("\n벌써 돈을 다썻어요.. 돈을 충전하실래요? 1,000,000원 충전하려면 10000을 입력하세요. (종료: n)");
-                    string rechargeInput = Console.ReadLine();
-                    if (rechargeInput == "1000")
-                    {
-                        money += 100000;
-                        Console.WriteLine("100,000원이 충전되었어요 다시 강화해봐요!");
-                    }
-                    else if (rechargeInput == "10000") // 변경된 부분: 10000 입력 시 1000000 충전
-                    {
-                        money += 1000000;
-                        Console.WriteLine("1,000,000원이 충전되었습니다. 게임을 계속합니다.");
-                    }
-                    else if (rechargeInput.ToLower() == "n")
-                    {
-                        Console.WriteLine("게임을 종료할게요.");
-                        playing = false;
-                        break;
-                    }
-                    else
-                    {
-                        Console.WriteLine("잘못된 입력이에요. 게임을 끌게요.");
-                        playing = false;
-                        break;
-                    }
+                    Console.WriteLine("\n벌써 돈을 다썼어요.. 돈을 충전하시거나 검을 판매하실 수 있습니다.");
+                    AskForAction(ref money, enhancementCost, userId, enhancementLevel, successRate, destructionRate, enhancementCost);
                 }
                 if (money < enhancementCost)
                 {
@@ -244,80 +144,139 @@ namespace SwordEnhancement
                     }
                 }
             }
-        
+
             if (!playing)
             {
                 SaveUserData(userId, enhancementLevel, successRate, money, destructionRate, enhancementCost);
             }
-     
+        }
 
-                    // 사용자 데이터 불러오기
-    static bool TryLoadUserData(string userId, out int enhancementLevel, out double successRate, out int money, out double destructionRate, out int enhancementCost)
+        static void CheckAndRecharge(ref int money, int enhancementCost)
+        {
+            if (money < enhancementCost)
             {
-                enhancementLevel = 0; //사용자 데이터 수치조정
-                successRate = 95.0; 
-                money = 1000000;
-                destructionRate = 0.0; // 기본값 설정
-                enhancementCost = 100; // 기본 강화 비용 설정
-
-                if (File.Exists(filePath))
+                Console.WriteLine("\n강화 비용이 부족합니다. 돈을 충전하시려면 1000을 입력하세요. (종료: n)");
+                Console.WriteLine("강화 비용이 부족합니다. 돈을 충전하시려면 10000을 입력하세요. (종료: n)");
+                string rechargeInput = Console.ReadLine();
+                if (rechargeInput == "1000")
                 {
-                    string[] lines = File.ReadAllLines(filePath);
-                    foreach (string line in lines)
-                    {
-                        string[] parts = line.Split(',');
-                        if (parts[0] == userId)
-                        {
-                            enhancementLevel = int.Parse(parts[1]);
-                            successRate = double.Parse(parts[2]);
-                            money = int.Parse(parts[3]);
-                            destructionRate = double.Parse(parts[4]); // 파괴 확률 불러오기
-                            enhancementCost = int.Parse(parts[5]); // 강화 비용 불러오기
-                            return true;
-                        }
-                    }
+                    money += 100000;
+                    Console.WriteLine("100,000원이 충전되었습니다. 게임을 계속합니다.");
                 }
-
-                return false;
-            }
-
-           
-            static void SaveUserData(string userId, int enhancementLevel, double successRate, int money, double destructionRate, int enhancementCost)// 유저id,강화단계,성공확률,돈,파괴확률,강화비용 저장
-            {
-                string[] lines;
-                if (File.Exists(filePath))
+                else if (rechargeInput == "10000") // 10000 입력 시 1000000원 충전
                 {
-                    List<string> updatedLines = new List<string>();
-                    lines = File.ReadAllLines(filePath);
-                    bool found = false;
-                    foreach (string line in lines)
-                    {
-                        string[] parts = line.Split(',');
-                        if (parts[0] == userId)
-                        {
-                            updatedLines.Add($"{userId},{enhancementLevel},{successRate},{money},{destructionRate},{enhancementCost}");
-                            found = true;
-                        }
-                        else
-                        {
-                            updatedLines.Add(line);
-                        }
-                    }
-                    if (!found)
-                    {
-                        updatedLines.Add($"{userId},{enhancementLevel},{successRate},{money},{destructionRate},{enhancementCost}");
-                    }
-                    File.WriteAllLines(filePath, updatedLines.ToArray());
+                    money += 1000000;
+                    Console.WriteLine("1,000,000원이 충전되었습니다. 게임을 계속합니다.");
+                }
+                else if (rechargeInput.ToLower() == "n")
+                {
+                    Console.WriteLine("게임을 종료합니다.");
+                    Environment.Exit(0); // n 입력시 프로그램 종료
                 }
                 else
                 {
-                    string newLine = $"{userId},{enhancementLevel},{successRate},{money},{destructionRate},{enhancementCost}";
-                    File.WriteAllText(filePath, newLine + Environment.NewLine);
+                    Console.WriteLine("잘못된 입력입니다. 게임을 종료합니다.");
+                    Environment.Exit(0); // 다른 채팅 입력시 프로그램 종료
+                }
+            }
+        }
+
+        static void AskForAction(ref int money, int enhancementCost, string userId, int enhancementLevel, double successRate, double destructionRate, int sellPrice)
+        {
+            Console.WriteLine("\n강화 비용이 부족합니다. 검을 판매하시겠습니까? (판매: s)");
+            Console.WriteLine("\n강화 비용이 부족합니다. 돈을 충전하시려면 1000을 입력하세요. (종료: n)");
+            Console.WriteLine("\n강화 비용이 부족합니다. 돈을 충전하시려면 10000을 입력하세요. (종료: n)");
+            string userInput = Console.ReadLine();
+            if (userInput.ToLower() == "s")
+            {
+                SellSword(ref money, enhancementLevel, successRate, destructionRate, enhancementCost);
+            }
+            else
+            {
+                CheckAndRecharge(ref money, enhancementCost);
+            }
+        }
+
+        static void SellSword(ref int money, int enhancementLevel, double successRate, double destructionRate, int enhancementCost)
+        {
+            if (enhancementLevel >= 5) // 판매는 5단계 이상부터 가능합니다.
+            {
+                double sellPrice = enhancementLevel >= 5 ? enhancementCost * 3 : 0;
+                money += (int)sellPrice;
+                Console.WriteLine($"검을 판매했습니다. {sellPrice}원이나 벌었어요!!!");
+                // 판매 후 초기화
+                enhancementLevel = 0;
+                successRate = 95.0;
+                destructionRate = 0.0;
+                enhancementCost = 100;
+            }
+            else
+            {
+                Console.WriteLine("5단계 이상의 검만 팔수있어요!");
+            }
+        }
+
+        static bool TryLoadUserData(string userId, out int enhancementLevel, out double successRate, out int money, out double destructionRate, out int enhancementCost)
+        {
+            enhancementLevel = 0; //사용자 데이터 수치조정
+            successRate = 95.0;
+            money = 1000000;
+            destructionRate = 0.0; // 기본값 설정
+            enhancementCost = 100; // 기본 강화 비용 설정
+
+            if (File.Exists(filePath))
+            {
+                string[] lines = File.ReadAllLines(filePath);
+                foreach (string line in lines)
+                {
+                    string[] parts = line.Split(',');
+                    if (parts[0] == userId)
+                    {
+                        enhancementLevel = int.Parse(parts[1]);
+                        successRate = double.Parse(parts[2]);
+                        money = int.Parse(parts[3]);
+                        destructionRate = double.Parse(parts[4]); // 파괴 확률 불러오기
+                        enhancementCost = int.Parse(parts[5]); // 강화 비용 불러오기
+                        return true;
+                    }
                 }
             }
 
+            return false;
+        }
+
+        static void SaveUserData(string userId, int enhancementLevel, double successRate, int money, double destructionRate, int enhancementCost)
+        {
+            string[] lines;
+            if (File.Exists(filePath))
+            {
+                List<string> updatedLines = new List<string>();
+                lines = File.ReadAllLines(filePath);
+                bool found = false;
+                foreach (string line in lines)
+                {
+                    string[] parts = line.Split(',');
+                    if (parts[0] == userId)
+                    {
+                        updatedLines.Add($"{userId},{enhancementLevel},{successRate},{money},{destructionRate},{enhancementCost}");
+                        found = true;
+                    }
+                    else
+                    {
+                        updatedLines.Add(line);
+                    }
+                }
+                if (!found)
+                {
+                    updatedLines.Add($"{userId},{enhancementLevel},{successRate},{money},{destructionRate},{enhancementCost}");
+                }
+                File.WriteAllLines(filePath, updatedLines.ToArray());
+            }
+            else
+            {
+                string newLine = $"{userId},{enhancementLevel},{successRate},{money},{destructionRate},{enhancementCost}";
+                File.WriteAllText(filePath, newLine + Environment.NewLine);
+            }
         }
     }
 }
-
-

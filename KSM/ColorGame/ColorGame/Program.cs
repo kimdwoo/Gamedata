@@ -14,14 +14,14 @@ class Program
             string start = Console.ReadLine().ToLower();
             Console.WriteLine("===================================");
 
-            if (start == "y")
+            if (start == "y"|| start == "Y")
             {
                 Console.WriteLine("게임을 실행합니다\n");
                 Console.WriteLine("해당 게임은 [색깔 빠칭코 게임]으로 같은 색깔이 5개면 10점, 4개면 5점, 3개면 2점, 2개면 0점, 모두 다른색이면 -10점 입니다");
                 Console.WriteLine("점수가 0점 미만이 되면 게임 메인 화면으로 돌아가게 됩니다. 이점에 유의해주세요\n");
                 ColorGame(rand);
             }
-            else if (start == "n")
+            else if (start == "n"||start == "N")
             {
                 Console.WriteLine("게임을 종료합니다");
                 break;

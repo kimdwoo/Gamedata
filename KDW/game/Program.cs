@@ -7,7 +7,7 @@ namespace SwordEnhancement
     class Program
     {
         static string filePath = "userData.txt"; // 사용자 데이터를 저장할 파일
-
+        
         static void Main(string[] args)
         {
             Console.WriteLine("사용자 아이디를 입력하세요:");
@@ -19,10 +19,12 @@ namespace SwordEnhancement
             if (TryLoadUserData(userId, out enhancementLevel, out successRate, out money, out destructionRate, out enhancementCost))
             {
                 Console.WriteLine($"{userId}님, 이전 게임 상태를 불러왔습니다.");
+                
 
                 // 데이터 로딩 후 돈이 강화 비용보다 적은지 검사
                 if (money < enhancementCost)
                 {
+                    bool play = true;
                     double sellPrice = enhancementLevel >= 5 ? enhancementCost * 3 : 0;
                     Console.ForegroundColor = ConsoleColor.Blue;
                     Console.Write($"현재 강화 비용: {enhancementCost:F1}원, ");
@@ -69,7 +71,11 @@ namespace SwordEnhancement
                         money += 1000000;
                         Console.WriteLine("10,000,000원이 충전되었습니다. 게임을 계속합니다.");
                     }
-                    
+                    else if (userinp.ToLower() == "n")
+                    {
+                        Console.WriteLine("게임을 종료합니다.");
+                        play = false;
+                    }
                 }
             }
             else
@@ -82,9 +88,9 @@ namespace SwordEnhancement
                 Console.WriteLine("새 게임을 시작합니다.");
             }
 
+
+
             bool playing = true;
-
-
 
 
 
@@ -230,6 +236,11 @@ namespace SwordEnhancement
                         destructionRate = newDestructionRate;
                         enhancementCost = newEnhancementCost;
                     }
+                    else if (userInput.ToLower() == "n")
+                    {
+                        Console.WriteLine("게임을 종료합니다.");
+                        playing = false;
+                    }
                     else if (charge == "1000")
                     {
                         money += 1000000;
@@ -296,6 +307,10 @@ namespace SwordEnhancement
                 {
                     money += 10000000;
                     Console.WriteLine("10,000,000원이 충전되었습니다. 게임을 계속합니다.");
+                }
+                else
+                {
+                    Console.WriteLine("잘못된 입력입니다.");
                 }
             }
 

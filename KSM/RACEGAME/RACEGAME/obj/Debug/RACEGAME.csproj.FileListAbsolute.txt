@@ -1,0 +1,7 @@
+C:\Gamedata\KSM\RACEGAME\RACEGAME\obj\Debug\RACEGAME.csproj.AssemblyReference.cache
+C:\Gamedata\KSM\RACEGAME\RACEGAME\obj\Debug\RACEGAME.csproj.CoreCompileInputs.cache
+C:\Gamedata\KSM\RACEGAME\RACEGAME\bin\Debug\RACEGAME.exe.config
+C:\Gamedata\KSM\RACEGAME\RACEGAME\bin\Debug\RACEGAME.exe
+C:\Gamedata\KSM\RACEGAME\RACEGAME\bin\Debug\RACEGAME.pdb
+C:\Gamedata\KSM\RACEGAME\RACEGAME\obj\Debug\RACEGAME.exe
+C:\Gamedata\KSM\RACEGAME\RACEGAME\obj\Debug\RACEGAME.pdb

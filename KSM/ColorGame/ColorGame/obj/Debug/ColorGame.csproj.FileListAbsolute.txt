@@ -1,0 +1,7 @@
+C:\Gamedata\KSM\ColorGame\ColorGame\obj\Debug\ColorGame.csproj.AssemblyReference.cache
+C:\Gamedata\KSM\ColorGame\ColorGame\obj\Debug\ColorGame.csproj.CoreCompileInputs.cache
+C:\Gamedata\KSM\ColorGame\ColorGame\bin\Debug\ColorGame.exe.config
+C:\Gamedata\KSM\ColorGame\ColorGame\bin\Debug\ColorGame.exe
+C:\Gamedata\KSM\ColorGame\ColorGame\bin\Debug\ColorGame.pdb
+C:\Gamedata\KSM\ColorGame\ColorGame\obj\Debug\ColorGame.exe
+C:\Gamedata\KSM\ColorGame\ColorGame\obj\Debug\ColorGame.pdb

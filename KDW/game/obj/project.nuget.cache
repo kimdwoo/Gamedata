@@ -1,8 +1,16 @@
 {
   "version": 2,
-  "dgSpecHash": "XP0AY1hcz+eOKaR+bPrkMtvRQ0PQ6EhvyuRFh82MGXD6/W9PDWSdTf6wKGdEd5Rt2/bDBjrejJSVQ9H+rCbccg==",
+  "dgSpecHash": "O9sTWPmh5/PB0oU7qpUDn/Aj5hgp3+/qhsmWIQ19XCbMm3W8rZdqXwREZlUx1T+MCCuBIBDLI1zY5oFnIoDIDQ==",
   "success": true,
   "projectFilePath": "C:\\student\\gamedata\\KDW\\game\\game.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\c\\.nuget\\packages\\google.apis\\1.68.0\\google.apis.1.68.0.nupkg.sha512",
+    "C:\\Users\\c\\.nuget\\packages\\google.apis.auth\\1.68.0\\google.apis.auth.1.68.0.nupkg.sha512",
+    "C:\\Users\\c\\.nuget\\packages\\google.apis.core\\1.68.0\\google.apis.core.1.68.0.nupkg.sha512",
+    "C:\\Users\\c\\.nuget\\packages\\google.apis.sheets.v4\\1.68.0.3393\\google.apis.sheets.v4.1.68.0.3393.nupkg.sha512",
+    "C:\\Users\\c\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
+    "C:\\Users\\c\\.nuget\\packages\\system.codedom\\7.0.0\\system.codedom.7.0.0.nupkg.sha512",
+    "C:\\Users\\c\\.nuget\\packages\\system.management\\7.0.2\\system.management.7.0.2.nupkg.sha512"
+  ],
   "logs": []
 }

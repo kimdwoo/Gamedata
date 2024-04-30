@@ -8,113 +8,130 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
-
+// https://docs.google.com/spreadsheets/d/1xlx4gDohutZTMRaaF5IG6alvnAH2S4asyXSjuvUV8tc/edit#gid=0
 namespace SwordEnhancement
 {
     class Program
     {
-            static string spreadsheetId = "1xlx4gDohutZTMRaaF5IG6alvnAH2S4asyXSjuvUV8tc";
-            static DateTime startTime;
+        static string spreadsheetId = "1xlx4gDohutZTMRaaF5IG6alvnAH2S4asyXSjuvUV8tc";
         static Stopwatch stopwatch = new Stopwatch();
+        static TimeSpan totalPlayTime = TimeSpan.Zero;
         static void Main(string[] args)
-            {
-                Console.WriteLine("아이디를 입력해주세요");
-            stopwatch.Start();
+        {
+            Console.WriteLine("아이디를 입력해주세요");
+            
             string UserId = Console.ReadLine();
-                startTime = DateTime.Now;
-                try
+            stopwatch.Start();
+            try
+            {
+                // Google Sheets API에 접근하기 위한 권한 설정
+                string[] Scopes = { SheetsService.Scope.Spreadsheets };
+                var service = new SheetsService(new BaseClientService.Initializer()
                 {
-                    // Google Sheets API에 접근하기 위한 권한 설정
-                    string[] Scopes = { SheetsService.Scope.Spreadsheets };
-                    var service = new SheetsService(new BaseClientService.Initializer()
-                    {
-                        HttpClientInitializer = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                            new ClientSecrets
-                            {
-                                ClientId = "560915268870-494407a3t83i14eirqk7rmqi69v3rhfj.apps.googleusercontent.com",
-                                ClientSecret = "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"
-                            },
-                            Scopes,
-                            "user",
-                            CancellationToken.None,
-                            new FileDataStore("MyAppsToken")).Result,
-                        ApplicationName = "Google Sheets API .NET Quickstart",
-                    });
-
-                    // 시트에서 유저 데이터 불러오기
-                    string range = $"Gamedata!A1:G"; // 모든 데이터를 불러옴
-                    SpreadsheetsResource.ValuesResource.GetRequest getRequest = service.Spreadsheets.Values.Get(spreadsheetId, range);
-                    ValueRange getResponse = getRequest.Execute();
-                    IList<IList<Object>> userData = getResponse.Values;
-
-                    bool newUser = true; // 새로운 유저 여부
-                    int rowIndex = 0; // 유저 데이터의 행 인덱스
-                    foreach (var row in userData)
-                    {
-                        if (row.Count > 0 && row[0].ToString() == UserId)
+                    HttpClientInitializer = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                        new ClientSecrets
                         {
-                            newUser = false;
-                            break;
-                        }
-                        rowIndex++;
-                    }
+                            ClientId = "560915268870-494407a3t83i14eirqk7rmqi69v3rhfj.apps.googleusercontent.com",
+                            ClientSecret = "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"
+                        },
+                        Scopes,
+                        "user",
+                        CancellationToken.None,
+                        new FileDataStore("MyAppsToken")).Result,
+                    ApplicationName = "Google Sheets API .NET Quickstart",
+                });
 
-                    if (newUser)
-                    {
-                        // 새로운 유저라면 유저 아이디와 초기 데이터를 시트에 저장
-                        List<object> newUserRow = new List<object> { UserId, 1, 95.0, 0.0, 100, 5000000 };
-                        ValueRange appendRequest = new ValueRange { Values = new List<IList<object>> { newUserRow } };
-                        string appendRange = $"Gamedata!A{userData.Count + 1}:G{userData.Count + 1}"; // 새로운 유저이므로 현재 데이터 개수보다 하나 더 아래에 저장
-                        SpreadsheetsResource.ValuesResource.AppendRequest request = service.Spreadsheets.Values.Append(appendRequest, spreadsheetId, appendRange);
-                        request.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
-                        var appendResponse = request.Execute();
-                    }
+                // 시트에서 유저 데이터 불러오기
+                string range = $"Gamedata!A:Z"; // 모든 데이터를 불러옴
+                SpreadsheetsResource.ValuesResource.GetRequest getRequest = service.Spreadsheets.Values.Get(spreadsheetId, range);
+                ValueRange getResponse = getRequest.Execute();
+                IList<IList<Object>> userData = getResponse.Values;
 
-                    // 저장된 데이터 불러오기
-                    string userRange = $"Gamedata!A:G"; // 모든 데이터를 불러옴
-                    getRequest = service.Spreadsheets.Values.Get(spreadsheetId, userRange);
-                    getResponse = getRequest.Execute();
-                    userData = getResponse.Values;
-
-                    // 사용자의 아이디로 데이터를 찾음
-                    rowIndex = 0;
-                    foreach (var row in userData)
+                bool newUser = true; // 새로운 유저 여부
+                int rowIndex = 0; // 유저 데이터의 행 인덱스
+                foreach (var row in userData)
+                {
+                    if (row.Count > 0 && row[0].ToString() == UserId)
                     {
-                        if (row.Count > 0 && row[0].ToString() == UserId)
-                        {
-                            break;
-                        }
-                        rowIndex++;
+                        newUser = false;
+                        break;
                     }
-
-                    if (rowIndex < userData.Count)
-                    {
-                        int enhancementLevel = int.Parse(userData[rowIndex][1].ToString());
-                        double successRate = double.Parse(userData[rowIndex][2].ToString());
-                        double destructionRate = double.Parse(userData[rowIndex][3].ToString());
-                        double enhancementCost = double.Parse(userData[rowIndex][4].ToString());
-                        double money = double.Parse(userData[rowIndex][5].ToString());
-                    TimeSpan elapsedTime = stopwatch.Elapsed;
-                    String formattedPlayTime = $"{elapsedTime.Minutes}분 {elapsedTime.Seconds}초";
-                        PlayGame(ref enhancementLevel, ref successRate, ref destructionRate, ref enhancementCost, ref money, UserId, rowIndex, service, formattedPlayTime);
-                    }
-                    else
-                    {
-                        Console.WriteLine("저장된 데이터를 불러올 수 없습니다.");
-                    }
+                    rowIndex++;
                 }
-                catch (Exception ex)
+                if (newUser)
                 {
-                    Console.WriteLine("오류: " + ex.Message);
+                    // 새로운 유저라면 유저 아이디와 초기 데이터를 시트에 저장
+                    List<object> newUserRow = new List<object> { UserId, 1, 95.0, 0.0, 100, 5000000, 0, 0, 0 ,0 ,0 ,0 ,0 ,0,0 };
+                    ValueRange appendRequest = new ValueRange { Values = new List<IList<object>> { newUserRow } };
+                    string appendRange = $"Gamedata!A{userData.Count + 1}:Z{userData.Count + 1}"; // 새로운 유저이므로 현재 데이터 개수보다 하나 더 아래에 저장
+                    SpreadsheetsResource.ValuesResource.AppendRequest request = service.Spreadsheets.Values.Append(appendRequest, spreadsheetId, appendRange);
+                    request.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
+                    var appendResponse = request.Execute();
+                }
+
+                // 저장된 데이터 불러오기
+                string userRange = $"Gamedata!A:Z"; // 모든 데이터를 불러옴
+                getRequest = service.Spreadsheets.Values.Get(spreadsheetId, userRange);
+                getResponse = getRequest.Execute();
+                userData = getResponse.Values;
+
+                // 사용자의 아이디로 데이터를 찾음
+                rowIndex = 0;
+                foreach (var row in userData)
+                {
+                    if (row.Count > 0 && row[0].ToString() == UserId)
+                    {
+                        break;
+                    }
+                    rowIndex++;
+                }
+
+                if (rowIndex < userData.Count)
+                {
+                    int enhancementLevel = int.Parse(userData[rowIndex][1].ToString());
+                    double successRate = double.Parse(userData[rowIndex][2].ToString());
+                    double destructionRate = double.Parse(userData[rowIndex][3].ToString());
+                    double enhancementCost = double.Parse(userData[rowIndex][4].ToString());
+                    double money = double.Parse(userData[rowIndex][5].ToString());
+                    string formattedPlayTimeStr = userData[rowIndex][6].ToString();
+                    TimeSpan totalPlayTime = TimeSpan.Parse(formattedPlayTimeStr);
+                    int tryCount1to9 = int.Parse(userData[rowIndex][7].ToString());
+                    int successCount1to9 = int.Parse(userData[rowIndex][8].ToString());
+                    int tryCount10to15 = int.Parse(userData[rowIndex][9].ToString());
+                    int successCount10to15 = int.Parse(userData[rowIndex][10].ToString());
+                    int tryCount16to21 = int.Parse(userData[rowIndex][11].ToString());
+                    int successCount16to21 = int.Parse(userData[rowIndex][12].ToString());
+                    int tryCount22to25 = int.Parse(userData[rowIndex][13].ToString());
+                    int successCount22to25 = int.Parse(userData[rowIndex][14].ToString());
+
+
+
+                    
+                    totalPlayTime = totalPlayTime.Add(stopwatch.Elapsed);
+
+
+                    PlayGame(ref enhancementLevel, ref successRate, ref destructionRate, ref enhancementCost, ref money, UserId, rowIndex, service, totalPlayTime,
+                             ref tryCount1to9, ref successCount1to9, ref tryCount10to15, ref successCount10to15, ref tryCount16to21, ref successCount16to21, ref tryCount22to25, ref successCount22to25);
+                }
+                else
+                {
+                    Console.WriteLine("저장된 데이터를 불러올 수 없습니다.");
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine("오류: " + ex.Message);
+            }
+        }
 
 
-            static void PlayGame(ref int enhancementLevel, ref double successRate, ref double destructionRate, ref double enhancementCost, ref double money, string UserId, int rowIndex, SheetsService service, string formattedPlayTime)
+        static void PlayGame(ref int enhancementLevel, ref double successRate, ref double destructionRate, ref double enhancementCost, ref double money, string UserId, int rowIndex, SheetsService service, TimeSpan totalPlayTime,
+        ref int tryCount1to9, ref int successCount1to9, ref int tryCount10to15, ref int successCount10to15, ref int tryCount16to21, ref int successCount16to21, ref int tryCount22to25, ref int successCount22to25)
         {
-            Console.WriteLine("게임을 시작합니다.");
-            stopwatch.Start();
+
+
             bool playing = true;
             while (playing && enhancementLevel < 25 && money >= enhancementCost)
             {
@@ -140,10 +157,28 @@ namespace SwordEnhancement
 
                 if (userInput.ToLower() == "y")
                 {
+                    if (enhancementLevel <= 9)
+                        tryCount1to9 += 1;
+                    else if (enhancementLevel <= 15)
+                        tryCount10to15 += 1;
+                    else if (enhancementLevel <= 21)
+                        tryCount16to21 += 1;
+                    else
+                        tryCount22to25 += 1;
+
                     money -= enhancementCost;
                     Random rnd = new Random();
                     double chance = rnd.NextDouble() * 100;
                     int caseNum = rnd.Next(1, 6);
+
+                    if (enhancementLevel < 10 && chance <= successRate)
+                        successCount1to9 += 1;
+                    else if (enhancementLevel < 16 && chance <= successRate)
+                        successCount10to15++;
+                    else if (enhancementLevel < 22 && chance <= successRate)
+                        successCount16to21 += 1;
+                    else if (enhancementLevel < 23 && chance <= successRate)
+                        successCount22to25++;
 
                     if (chance <= successRate)//검 강화 성공 코드
                     {
@@ -181,6 +216,13 @@ namespace SwordEnhancement
                         enhancementLevel--;
                         successRate += 3;
                         enhancementCost /= 1.5;
+                        if (enhancementLevel >= 15) 
+                        {
+                            destructionRate -= 4; // 4%만큼 감소
+                        }else if (enhancementLevel >= 14)
+                        {
+                            destructionRate = 0;
+                        }
                         Console.ForegroundColor = ConsoleColor.Blue;
                         switch (caseNum)
                         {
@@ -248,8 +290,11 @@ namespace SwordEnhancement
                 }
                 else if (userInput.ToLower() == "n")
                 {
-                    UpdateUserData(UserId, rowIndex, enhancementLevel, successRate, destructionRate, Math.Floor(enhancementCost), Math.Floor(money), formattedPlayTime, service);
+                    totalPlayTime = totalPlayTime.Add(stopwatch.Elapsed); // stopwatch가 멈추지 않은 상태에서 totalPlayTime을 업데이트
                     stopwatch.Stop();
+                    UpdateUserData(UserId, rowIndex, enhancementLevel, successRate, destructionRate, Math.Floor(enhancementCost), Math.Floor(money), totalPlayTime, service,
+                     tryCount1to9, successCount1to9, tryCount10to15, successCount10to15, tryCount16to21, successCount16to21, tryCount22to25, successCount22to25);
+                    
                     Console.WriteLine("게임을 종료합니다.");
                     playing = false;
                 }//게임 실행하는 도중에 충전 가능하게 만든 코드
@@ -317,12 +362,11 @@ namespace SwordEnhancement
                     else if (userInput.ToLower() == "n")
                     {
                         Console.WriteLine("게임을 종료합니다.");
-                        UpdateUserData(UserId, rowIndex, enhancementLevel, successRate, destructionRate, Math.Floor(enhancementCost), Math.Floor(money), formattedPlayTime, service);
+                        UpdateUserData(UserId, rowIndex, enhancementLevel, successRate, destructionRate, Math.Floor(enhancementCost), Math.Floor(money),totalPlayTime, service, tryCount1to9, successCount1to9, tryCount10to15, successCount10to15, tryCount16to21, successCount16to21, tryCount22to25, successCount22to25);
+
                         stopwatch.Stop();
                         playing = false;
                     }
-                    
-
                 }
             }
 
@@ -362,20 +406,17 @@ namespace SwordEnhancement
             }
         }
 
-        static void UpdateUserData(string UserId, int rowIndex, int enhancementLevel, double successRate, double destructionRate, double enhancementCost, double money, string formattedPlayTime, SheetsService service)
+        static void UpdateUserData(string UserId, int rowIndex, int enhancementLevel, double successRate, double destructionRate, double enhancementCost, double money, TimeSpan totalPlayTime, SheetsService service, int tryCount1to9, int successCount1to9, int tryCount10to15, int successCount10to15, int tryCount16to21, int successCount16to21, int tryCount22to25, int successCount22to25)
         {
-            
-                // 업데이트할 데이터 준비
-                List<object> newData = new List<object> { UserId, enhancementLevel, successRate, destructionRate, Math.Floor(enhancementCost), Math.Floor(money), formattedPlayTime };
+            // 업데이트할 데이터 준비
+            List<object> newData = new List<object> { UserId, enhancementLevel, successRate, destructionRate, Math.Floor(enhancementCost), Math.Floor(money), totalPlayTime, tryCount1to9, successCount1to9, tryCount10to15, successCount10to15, tryCount16to21, successCount16to21, tryCount22to25, successCount22to25 };
 
-                // 데이터 업데이트
-                string updateRange = $"Gamedata!A{rowIndex + 1}:G{rowIndex + 1}";
-                ValueRange updateRequest = new ValueRange { Values = new List<IList<object>> { newData } };
-                SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(updateRequest, spreadsheetId, updateRange);
-                request.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
-                var updateResponse = request.Execute();
-            
-           
+            // 데이터 업데이트
+            string updateRange = $"Gamedata!A{rowIndex + 1}:Z{rowIndex + 1}";
+            ValueRange updateRequest = new ValueRange { Values = new List<IList<object>> { newData } };
+            SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(updateRequest, spreadsheetId, updateRange);
+            request.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
+            var updateResponse = request.Execute();
         }
 
 

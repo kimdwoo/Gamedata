@@ -19,7 +19,7 @@ namespace SwordEnhancement
         static Stopwatch stopwatch = new Stopwatch();
         static void Main(string[] args)
         {
-            Console.WriteLine("아이디를 입력해주세요");
+            Console.WriteLine("아이디를 입력해주세요 : ");
             string userId = Console.ReadLine();
             string today = DateTime.Now.ToString("yyyy-MM-dd");
 
@@ -32,25 +32,44 @@ namespace SwordEnhancement
                 ValueRange getResponse = getRequest.Execute();
                 IList<IList<Object>> userData = getResponse.Values;
 
-                int rowIndex = FindUserRowIndex(userData, userId, today);
+                string lastPlayDate;
+                int rowIndex = FindUserRowIndex(userData, userId, out lastPlayDate);
 
-                if (rowIndex == -1) // 사용자 데이터가 없는 경우 새로운 데이터 행을 추가
+                if (rowIndex != -1 && lastPlayDate == today) // 같은 날짜에 다시 로그인한 경우
                 {
-                    // 초기 게임 설정 데이터
-                    List<object> newUserRow = new List<object> { userId, today, 1, 95.0, 0.0, 100, 5000000, "00:00:00", 0, 0, 0, 0, 0, 0, 0, 0 };
-                    userData.Add(newUserRow); // 로컬 리스트에 추가
-                    rowIndex = userData.Count - 1; // 새로 추가된 행의 인덱스
+                    // 기존 데이터로 게임을 계속 진행
+                    PlayGame(userData, rowIndex, userId, service, today);
+                }
+                else if (rowIndex != -1 && lastPlayDate != today) // 다른 날짜에 로그인한 경우
+                {
+                    // 이전 세션 데이터를 기반으로 새로운 행 추가
+                    List<object> newUserRow = new List<object>(userData[rowIndex]);
+                    newUserRow[1] = today; // 날짜만 오늘로 변경
+                    userData.Add(newUserRow);
+                    rowIndex = userData.Count - 1;
                     ValueRange appendRequest = new ValueRange { Values = new List<IList<object>> { newUserRow } };
-                    string appendRange = $"Gamedata!A{rowIndex + 1}:P";
+                    string appendRange = $"Gamedata!A{rowIndex + 1}:S";
                     SpreadsheetsResource.ValuesResource.AppendRequest request = service.Spreadsheets.Values.Append(appendRequest, spreadsheetId, appendRange);
                     request.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
                     request.Execute();
-                }
 
-                // 게임 시작
-                stopwatch.Start();
-                PlayGame(userData, rowIndex, userId, service, today);
-                stopwatch.Stop();
+                    // 새로운 행에서 게임 시작
+                    PlayGame(userData, rowIndex, userId, service, today);
+                }
+                else // 사용자 데이터가 없는 경우 새로운 데이터 행을 추가
+                {
+                    List<object> newUserRow = new List<object> { userId, today, 1, 95.0, 0.0, 100, 500000, "00:00:00", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                    userData.Add(newUserRow); // 로컬 리스트에 추가
+                    rowIndex = userData.Count - 1; // 새로 추가된 행의 인덱스
+                    ValueRange appendRequest = new ValueRange { Values = new List<IList<object>> { newUserRow } };
+                    string appendRange = $"Gamedata!A{rowIndex + 1}:S";
+                    SpreadsheetsResource.ValuesResource.AppendRequest request = service.Spreadsheets.Values.Append(appendRequest, spreadsheetId, appendRange);
+                    request.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
+                    request.Execute();
+
+                    // 새로운 행에서 게임 시작
+                    PlayGame(userData, rowIndex, userId, service, today);
+                }
             }
             catch (Exception ex)
             {
@@ -77,23 +96,37 @@ namespace SwordEnhancement
             });
         }
 
-        static int FindUserRowIndex(IList<IList<Object>> userData, string userId, string today)
+        static int FindUserRowIndex(IList<IList<Object>> userData, string userId, out string lastPlayDate)
         {
+            int latestIndex = -1;
+            DateTime latestDate = DateTime.MinValue;
+            lastPlayDate = null;
+
             for (int i = 0; i < userData.Count; i++)
             {
                 IList<Object> row = userData[i];
-                if (row.Count >= 2 && row[0].ToString() == userId && row[1].ToString() == today)
+                if (row.Count > 1 && row[0].ToString() == userId)
                 {
-                    return i;
+                    DateTime rowDate;
+                    if (DateTime.TryParse(row[1].ToString(), out rowDate))
+                    {
+                        if (rowDate > latestDate)
+                        {
+                            latestDate = rowDate;
+                            latestIndex = i;
+                            lastPlayDate = row[1].ToString(); // 날짜 저장
+                        }
+                    }
                 }
             }
-            return -1;
+            return latestIndex;
         }
 
         static void PlayGame(IList<IList<Object>> userData, int rowIndex, string userId, SheetsService service, string today)
         {
-           
-                int enhancementLevel = Convert.ToInt32(userData[rowIndex][2]);
+            
+
+            int enhancementLevel = Convert.ToInt32(userData[rowIndex][2]);
                 double successRate = Convert.ToDouble(userData[rowIndex][3]);
                 double destructionRate = Convert.ToDouble(userData[rowIndex][4]);
                 double enhancementCost = Convert.ToDouble(userData[rowIndex][5]);
@@ -108,11 +141,14 @@ namespace SwordEnhancement
                 int successCount16to21 = Convert.ToInt32(userData[rowIndex][13]);
                 int tryCount22to25 = Convert.ToInt32(userData[rowIndex][14]);
                 int successCount22to25 = Convert.ToInt32(userData[rowIndex][15]);
+            double rechargeAmount = Convert.ToDouble(userData[rowIndex][16]);
+            int rechargeCount = Convert.ToInt32(userData[rowIndex][17]);
+            int destructionCount = Convert.ToInt32(userData[rowIndex][18]);
 
 
-                // 게임 실행
+            // 게임 실행
 
-                bool playing = true;
+            bool playing = true;
                     while (playing && enhancementLevel < 25 && money >= enhancementCost)
                     {
                         double sellPrice = enhancementLevel >= 5 ? enhancementCost * 3 : 0;
@@ -190,7 +226,8 @@ namespace SwordEnhancement
                                 successRate = 95.0;
                                 destructionRate = 0.0;
                                 enhancementCost = 100;
-                            }
+                                destructionCount++;
+                    }
                             else   // 파괴되지 않고 강화만 실패한 경우, 하락
                             {
                                 enhancementLevel--;
@@ -274,7 +311,7 @@ namespace SwordEnhancement
                             totalPlayTime = totalPlayTime.Add(stopwatch.Elapsed); // stopwatch가 멈추지 않은 상태에서 totalPlayTime을 업데이트
                             stopwatch.Stop();
                             UpdateUserData(userId, rowIndex, today, enhancementLevel, successRate, destructionRate, Math.Floor(enhancementCost), Math.Floor(money), totalPlayTime, service,
-                             tryCount1to9, successCount1to9, tryCount10to15, successCount10to15, tryCount16to21, successCount16to21, tryCount22to25, successCount22to25);
+                             tryCount1to9, successCount1to9, tryCount10to15, successCount10to15, tryCount16to21, successCount16to21, tryCount22to25, successCount22to25, rechargeAmount, rechargeCount, destructionCount);
 
                             Console.WriteLine("게임을 종료합니다.");
                             playing = false;
@@ -283,12 +320,16 @@ namespace SwordEnhancement
                         {
                             money += 1000000;
                             Console.WriteLine("1,000,000원이 충전되었습니다. 게임을 계속합니다.");
-                        }
+                            rechargeCount++; // 충전 횟수 증가
+                            rechargeAmount +=1000000; // 충전 금액 증가
+                }
                         else if (userInput == "10000")
                         {
                             money += 5000000;
                             Console.WriteLine("5,000,000원이 충전되었습니다. 게임을 계속합니다.");
-                        }
+                            rechargeCount++; // 충전 횟수 증가
+                            rechargeAmount += 5000000; // 충전 금액 증가
+                }
 
 
                         if (money < enhancementCost)
@@ -334,16 +375,20 @@ namespace SwordEnhancement
                             {
                                 money += 1000000;
                                 Console.WriteLine("1,000,000원이 충전되었습니다. 게임을 계속합니다.");
+                                rechargeCount++; // 충전 횟수 증가
+                                rechargeAmount += 1000000; // 충전 금액 증가
                             }
                             else if (charge == "10000")
                             {
                                 money += 5000000;
                                 Console.WriteLine("5,000,000원이 충전되었습니다. 게임을 계속합니다.");
+                                rechargeCount++; // 충전 횟수 증가
+                                rechargeAmount += 5000000; // 충전 금액 증가
                             }
                             else if (userInput.ToLower() == "n")
                             {
                                 Console.WriteLine("게임을 종료합니다.");
-                                UpdateUserData(userId, rowIndex, today, enhancementLevel, successRate, destructionRate, Math.Floor(enhancementCost), Math.Floor(money), totalPlayTime, service, tryCount1to9, successCount1to9, tryCount10to15, successCount10to15, tryCount16to21, successCount16to21, tryCount22to25, successCount22to25);
+                                UpdateUserData(userId, rowIndex, today, enhancementLevel, successRate, destructionRate, Math.Floor(enhancementCost), Math.Floor(money), totalPlayTime, service, tryCount1to9, successCount1to9, tryCount10to15, successCount10to15, tryCount16to21, successCount16to21, tryCount22to25, successCount22to25, rechargeAmount, rechargeCount, destructionCount);
 
                                 stopwatch.Stop();
                                 playing = false;
@@ -394,10 +439,22 @@ namespace SwordEnhancement
         }
 
         static void UpdateUserData(string userId, int rowIndex, string playDate, int enhancementLevel, double successRate, double destructionRate, double enhancementCost, double money, TimeSpan totalPlayTime, SheetsService service,
-                   int tryCount1to9, int successCount1to9, int tryCount10to15, int successCount10to15, int tryCount16to21, int successCount16to21, int tryCount22to25, int successCount22to25)
+    int tryCount1to9, int successCount1to9, int tryCount10to15, int successCount10to15, int tryCount16to21, int successCount16to21, int tryCount22to25, int successCount22to25, double rechargeAmount, int rechargeCount, int destructionCount)
         {
-            List<object> newData = new List<object> { userId, playDate, enhancementLevel, successRate, destructionRate, enhancementCost, money, totalPlayTime.ToString(), tryCount1to9, successCount1to9, tryCount10to15, successCount10to15, tryCount16to21, successCount16to21, tryCount22to25, successCount22to25 };
-            string updateRange = $"Gamedata!A{rowIndex + 1}:P{rowIndex + 1}";
+            List<object> newData = new List<object> {
+        userId, playDate, enhancementLevel, successRate, destructionRate, enhancementCost, money, totalPlayTime.ToString(),
+        tryCount1to9, successCount1to9, tryCount10to15, successCount10to15, tryCount16to21, successCount16to21, tryCount22to25, successCount22to25,
+        rechargeAmount, rechargeCount, destructionCount // 새로운 데이터 추가
+    };
+
+            // 데이터가 19개가 맞는지 확인
+            if (newData.Count != 19)
+            {
+                Console.WriteLine("Error: 데이터 필드의 수가 맞지 않습니다. 필요한 데이터 필드의 수: 19, 현재 데이터 필드의 수: " + newData.Count);
+                return;
+            }
+
+            string updateRange = $"Gamedata!A{rowIndex + 1}:S{rowIndex + 1}";  // 범위 수정
             ValueRange updateRequest = new ValueRange { Values = new List<IList<object>> { newData } };
             SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(updateRequest, spreadsheetId, updateRange);
             request.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
@@ -426,28 +483,6 @@ namespace SwordEnhancement
                 newEnhancementCost = enhancementCost;
             }
         }
-        static int FindUserRowIndex(IList<IList<Object>> userData, string userId)
-        {
-            int latestIndex = -1;
-            DateTime latestDate = DateTime.MinValue;
-
-            for (int i = 0; i < userData.Count; i++)
-            {
-                IList<Object> row = userData[i];
-                if (row.Count > 1 && row[0].ToString() == userId)
-                {
-                    DateTime rowDate;
-                    if (DateTime.TryParse(row[1].ToString(), out rowDate))
-                    {
-                        if (rowDate > latestDate)
-                        {
-                            latestDate = rowDate;
-                            latestIndex = i;
-                        }
-                    }
-                }
-            }
-            return latestIndex;
-        }
+        
     }
 }

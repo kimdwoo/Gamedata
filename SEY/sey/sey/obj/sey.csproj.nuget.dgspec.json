@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\PP\\sey\\sey\\sey.csproj": {}
+    "C:\\ssee\\SEY2\\sey\\sey\\sey.csproj": {}
   },
   "projects": {
-    "C:\\PP\\sey\\sey\\sey.csproj": {
+    "C:\\ssee\\SEY2\\sey\\sey\\sey.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\PP\\sey\\sey\\sey.csproj",
+        "projectUniqueName": "C:\\ssee\\SEY2\\sey\\sey\\sey.csproj",
         "projectName": "sey",
-        "projectPath": "C:\\PP\\sey\\sey\\sey.csproj",
+        "projectPath": "C:\\ssee\\SEY2\\sey\\sey\\sey.csproj",
         "packagesPath": "C:\\Users\\asus\\.nuget\\packages\\",
-        "outputPath": "C:\\PP\\sey\\sey\\obj\\",
+        "outputPath": "C:\\ssee\\SEY2\\sey\\sey\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Microsoft\\Xamarin\\NuGet\\"
